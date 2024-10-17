@@ -43,8 +43,8 @@ public class Lluvia {
 	      raindrop.height = 50;
 	      rainDropsPos.add(raindrop);
 	      // ver el tipo de gota
-	      if (MathUtils.random(1,10)<5)	    	  
-	         rainDropsType.add(1);
+	      if (MathUtils.random(1,10)<3)	 //Gota mala (20% de rate)  	  
+	         rainDropsType.add(1); //Gota buena (80% de rate)
 	      else 
 	    	 rainDropsType.add(2);
 	      lastDropTime = TimeUtils.nanoTime();
