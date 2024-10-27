@@ -1,0 +1,26 @@
+package puppy.code;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Rectangle;
+
+public class Comida extends Drop implements ElementoJuego {
+
+    public Comida(Texture textura, float x, float y) {
+        super(textura, x, y);
+        this.tipo = 1;  // Tipo específico para comida
+    }
+
+    @Override
+    public void actualizar(float delta) {
+        getArea().y -= 300 * delta;  // Movimiento hacia abajo
+    }
+
+    @Override
+    public boolean colisionaCon(Tarro tarro) {
+        return getArea().overlaps(tarro.getArea());
+    }
+
+    @Override
+    public Rectangle getArea() {
+        return super.getArea();  // Reutilizamos el método de la clase base
+    }
+}
