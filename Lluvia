@@ -1,106 +1,109 @@
 package puppy.code;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
 public class Lluvia {
-	private Array<Rectangle> rainDropsPos;
-	private Array<Integer> rainDropsType;
+    private Array<ElementoJuego> gotas;  // Cambiado a la interfaz ElementoJuego
     private long lastDropTime;
-    private Texture gotaBuena;
-    private Texture gotaMala;
     private Sound dropSound;
     private Music rainMusic;
-	   
-	public Lluvia(Texture gotaBuena, Texture gotaMala, Sound ss, Music mm) {
-		rainMusic = mm;
-		dropSound = ss;
-		this.gotaBuena = gotaBuena;
-		this.gotaMala = gotaMala;
-	}
-	
-	public void crear() {
-		rainDropsPos = new Array<Rectangle>();
-		rainDropsType = new Array<Integer>();
-		crearGotaDeLluvia();
-	      // start the playback of the background music immediately
-	      rainMusic.setLooping(true);
-	      rainMusic.play();
-	}
-	
-	private void crearGotaDeLluvia() {
-	      Rectangle raindrop = new Rectangle();
-	      raindrop.x = MathUtils.random(0, 800-64);
-	      raindrop.y = 480;
-	      raindrop.width = 40;
-	      raindrop.height = 50;
-	      rainDropsPos.add(raindrop);
-	      // ver el tipo de gota
-	      if (MathUtils.random(1,10)<3)	 //Gota mala (20% de rate)  	  
-	         rainDropsType.add(1); //Gota buena (80% de rate)
-	      else 
-	    	 rainDropsType.add(2);
-	      lastDropTime = TimeUtils.nanoTime();
-	   }
-	
-   public boolean actualizarMovimiento(Tarro tarro) { 
-	   // generar gotas de lluvia 
-	   if(TimeUtils.nanoTime() - lastDropTime > 100000000) crearGotaDeLluvia();
-	  
-	   
-	   // revisar si las gotas cayeron al suelo o chocaron con el tarro
-	   for (int i=0; i < rainDropsPos.size; i++ ) {
-		  Rectangle raindrop = rainDropsPos.get(i);
-	      raindrop.y -= 300 * Gdx.graphics.getDeltaTime();
-	      //cae al suelo y se elimina
-	      if(raindrop.y + 64 < 0) {
-	    	  rainDropsPos.removeIndex(i); 
-	    	  rainDropsType.removeIndex(i);
-	      }
-	      if(raindrop.overlaps(tarro.getArea())) { //la gota choca con el tarro
-	    	if(rainDropsType.get(i)==1) { // gota dañina
-	    	  tarro.dañar();
-	    	  if (tarro.getVidas()<=0)
-	    		 return false; // si se queda sin vidas retorna falso /game over
-	    	  rainDropsPos.removeIndex(i);
-	          rainDropsType.removeIndex(i);
-	      	}else { // gota a recolectar
-	    	  tarro.sumarPuntos(10);
-	          dropSound.play();
-	          rainDropsPos.removeIndex(i);
-	          rainDropsType.removeIndex(i);
-	      	}
-	      }
-	   } 
-	  return true; 
-   }
-   
-   public void actualizarDibujoLluvia(SpriteBatch batch) { 
-	   
-	  for (int i=0; i < rainDropsPos.size; i++ ) {
-		  Rectangle raindrop = rainDropsPos.get(i);
-		  if(rainDropsType.get(i)==1) // gota dañina
-	         batch.draw(gotaMala, raindrop.x, raindrop.y); 
-		  else
-			 batch.draw(gotaBuena, raindrop.x, raindrop.y); 
-	   }
-   }
-   public void destruir() {
-      dropSound.dispose();
-      rainMusic.dispose();
-   }
-   public void pausar() {
-	  rainMusic.stop();
-   }
-   public void continuar() {
-	  rainMusic.play();
-   }
-   
+
+    public Lluvia() {
+        // Utilizar los recursos cargados en Assets
+        this.dropSound = Assets.dropSound;
+        this.rainMusic = Assets.rainMusic;
+    }
+
+    public void crear() {
+        gotas = new Array<>();
+        crearGotaDeLluvia();
+        rainMusic.setLooping(true);
+        rainMusic.play();
+    }
+
+    private void crearGotaDeLluvia() {
+        float x = MathUtils.random(0, 800 - 64);
+        ElementoJuego nuevaGota;  // Usar la interfaz en lugar de la clase específica
+
+        int randomTipo = MathUtils.random(1, 50);
+        if (randomTipo == 1) {
+            nuevaGota = new ObjetoEspecial(x, 480);  // Objeto especial
+        } else if (randomTipo <= 5) {
+            nuevaGota = new Bomba(x, 480);  // Bomba
+        } else {
+            Texture texturaAleatoria = Assets.comidasTexturas.random();
+            nuevaGota = new Comida(texturaAleatoria, x, 480);  // Comida
+        }
+
+        gotas.add(nuevaGota);
+        lastDropTime = TimeUtils.nanoTime();
+    }
+
+    public boolean actualizarMovimiento(Tarro tarro) {
+        if (TimeUtils.nanoTime() - lastDropTime > 100000000) crearGotaDeLluvia();
+
+        for (int i = 0; i < gotas.size; i++) {
+            ElementoJuego gota = gotas.get(i);
+            gota.actualizar(Gdx.graphics.getDeltaTime());
+
+            if (gota.getArea().y + 64 < 0) {
+                gotas.removeIndex(i);
+            } else if (gota.getArea().overlaps(tarro.getArea())) {
+                boolean gameOver = manejarColision(gota, tarro);
+                gotas.removeIndex(i);
+                if (gameOver) {
+                    return false; // Retornar false para indicar que el juego debe terminar
+                }
+            }
+        }
+        return true; // Retornar true si el juego sigue
+    }
+
+    private boolean manejarColision(ElementoJuego gota, Tarro tarro) {
+        switch (gota.getTipo()) {
+            case 1:  // Comida
+                tarro.sumarPuntos(10);
+                dropSound.play();
+                break;
+            case 2:  // Bomba
+                if (!tarro.estaInmune()) {
+                    tarro.dañar();
+                    Assets.comidaMalaSound.play();
+                    if (tarro.getVidas() <= 0) {
+                        rainMusic.stop();  // Detener música al perder
+                        return true; // Retornar true para indicar que el juego debe terminar
+                    }
+                }
+                break;
+            case 3:  // Objeto Especial
+                tarro.activarInmunidad();  // Activar inmunidad
+                break;
+        }
+        return false; // Retornar false si no es game over
+    }
+
+    public void actualizarDibujoLluvia(SpriteBatch batch) {
+        for (ElementoJuego gota : gotas) {
+            batch.draw(gota.getTextura(), gota.getArea().x, gota.getArea().y);
+        }
+    }
+
+    public void destruir() {
+        // No es necesario liberar recursos aquí porque se liberan en Assets
+    }
+
+    public void pausar() {
+        rainMusic.stop();
+    }
+
+    public void continuar() {
+        rainMusic.play();
+    }
 }
