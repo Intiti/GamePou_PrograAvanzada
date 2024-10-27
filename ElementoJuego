@@ -1,0 +1,12 @@
+package puppy.code;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Rectangle;
+
+public interface ElementoJuego {
+    void actualizar(float delta);   // Actualizar la posición del elemento
+    int getTipo();                  // Obtener el tipo de elemento
+    boolean colisionaCon(Tarro tarro);  // Verificar si colisiona con el tarro
+    Rectangle getArea();            // Obtener el área del elemento
+    Texture getTextura();           // Obtener la textura del elemento
+}
