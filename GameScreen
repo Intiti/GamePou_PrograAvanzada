@@ -1,0 +1,117 @@
+package puppy.code;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.ScreenUtils;
+
+public class GameScreen implements Screen {
+    final GamePouMenu game;
+    private OrthographicCamera camera;
+    private SpriteBatch batch;
+    private BitmapFont font;
+    private Texture fondoJuego;
+    private Tarro tarro;
+    private Lluvia lluvia;
+
+    public GameScreen(final GamePouMenu game) {
+        this.game = game;
+        this.batch = game.getBatch();
+        this.font = game.getFont();
+        
+        // Cargar fondo del juego desde Assets
+        fondoJuego = new Texture(Gdx.files.internal("fondo_juego.png")); 
+        
+        // Crear el tarro usando la textura específica de Pou desde Assets
+        tarro = new Tarro(Assets.pouTexture, Assets.dropSound);
+
+        // Crear instancia de Lluvia, que utilizará recursos de Assets
+        lluvia = new Lluvia();
+
+        // Configurar la cámara
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 800, 480);
+        
+        // Inicializar el tarro y la lluvia
+        tarro.crear();
+        lluvia.crear();
+    }
+
+    @Override
+    public void render(float delta) {
+        ScreenUtils.clear(0.8f, 0.6f, 0.4f, 1);
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+
+        batch.begin();
+        batch.draw(fondoJuego, 0, 0, 800, 480);
+
+        // Actualizar inmunidad
+        tarro.actualizarInmunidad(delta);
+
+        // Dibujar textos de puntuación, vidas y high score
+        font.draw(batch, "Comida total: " + tarro.getPuntos(), 5, 475);
+        font.draw(batch, "Vidas : " + tarro.getVidas(), 670, 475);
+        font.draw(batch, "HighScore : " + game.getHigherScore(), camera.viewportWidth / 2 - 50, 475);
+
+        // Actualizar y dibujar los elementos del juego
+        if (!tarro.estaHerido()) {
+            tarro.actualizarMovimiento();
+            
+            if (!lluvia.actualizarMovimiento(tarro)) {
+                if (game.getHigherScore() < tarro.getPuntos()) {
+                    game.setHigherScore(tarro.getPuntos());  
+                }
+                game.setScreen(new GameOverScreen(game));
+                dispose();
+            }
+        }
+        
+        if (tarro.estaInmune()) {
+            font.draw(batch, "Inmunidad: " + String.format("%.1f", tarro.getTiempoInmunidad()) + "s", 5, 450);
+        }
+
+
+        tarro.dibujar(batch);
+        lluvia.actualizarDibujoLluvia(batch);
+        
+        batch.end();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        // Redimensionar la pantalla (si es necesario)
+    }
+
+    @Override
+    public void show() {
+        // Continuar la música de la lluvia
+        lluvia.continuar();
+    }
+
+    @Override
+    public void hide() {
+        // Llamado cuando se oculta la pantalla
+    }
+
+    @Override
+    public void pause() {
+        lluvia.pausar();
+        game.setScreen(new PausaScreen(game, this));
+    }
+
+    @Override
+    public void resume() {
+        // Reanudar el juego
+    }
+
+    @Override
+    public void dispose() {
+        lluvia.destruir();           // Liberar recursos de la lluvia
+        fondoJuego.dispose();        // Liberar fondo del juego
+    }
+}
