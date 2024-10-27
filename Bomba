@@ -1,0 +1,25 @@
+package puppy.code;
+import com.badlogic.gdx.math.Rectangle;
+
+public class Bomba extends Drop implements ElementoJuego {
+
+    public Bomba(float x, float y) {
+        super(Assets.gotaMalaTexture, x, y);  // Usar textura específica
+        this.tipo = 2;  // Tipo específico para bomba
+    }
+
+    @Override
+    public void actualizar(float delta) {
+        getArea().y -= 300 * delta;  // Movimiento hacia abajo
+    }
+
+    @Override
+    public boolean colisionaCon(Tarro tarro) {
+        return getArea().overlaps(tarro.getArea());
+    }
+
+    @Override
+    public Rectangle getArea() {
+        return super.getArea();  // Reutilizamos el método de la clase base
+    }
+}
