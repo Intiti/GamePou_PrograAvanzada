@@ -1,0 +1,25 @@
+package puppy.code;
+import com.badlogic.gdx.math.Rectangle;
+
+public class ObjetoEspecial extends Drop implements ElementoJuego {
+
+    public ObjetoEspecial(float x, float y) {
+        super(Assets.objetoEspecialTexture, x, y);
+        this.tipo = 3;  // Tipo específico para objeto especial
+    }
+
+    @Override
+    public void actualizar(float delta) {
+        getArea().y -= 300 * delta;  // Movimiento hacia abajo
+    }
+
+    @Override
+    public boolean colisionaCon(Tarro tarro) {
+        return getArea().overlaps(tarro.getArea());
+    }
+
+    @Override
+    public Rectangle getArea() {
+        return super.getArea();  // Reutilizamos el método de la clase base
+    }
+}
