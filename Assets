@@ -1,0 +1,86 @@
+package puppy.code;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.Array;
+
+public class Assets {
+    // Texturas para comida
+    public static Texture hamburguesaTexture;
+    public static Texture pizzaTexture;
+    public static Texture donaTexture;
+    
+    //Textura pou
+    public static Texture pouTexture;
+
+    // Textura de comida mala
+    public static Texture gotaMalaTexture;
+
+    // Lista de texturas de comida para selección aleatoria
+    public static Array<Texture> comidasTexturas;
+    
+    // Textura objeto especial
+    public static Texture objetoEspecialTexture;
+
+    // Sonidos y música
+    public static Sound dropSound;
+    public static Music rainMusic;
+    public static Sound loseSound;
+    public static Sound comidaMalaSound;
+
+    // Método para cargar todos los recursos
+    public static void cargar() {
+        // Cargar texturas de comida
+        hamburguesaTexture = new Texture(Gdx.files.internal("burger.png"));
+        pizzaTexture = new Texture(Gdx.files.internal("pizza.png"));
+        donaTexture = new Texture(Gdx.files.internal("dona.png"));
+        
+        // Cargar textura de Pou
+        pouTexture = new Texture(Gdx.files.internal("pou.png"));
+        
+        // Inicializar y agregar texturas de comida a la lista
+        comidasTexturas = new Array<>();
+        comidasTexturas.add(hamburguesaTexture);
+        comidasTexturas.add(pizzaTexture);
+        comidasTexturas.add(donaTexture);
+
+        // Cargar textura de la gota mala
+        gotaMalaTexture = new Texture(Gdx.files.internal("zapatilla.png"));
+        
+        // Cargar objeto especial
+        objetoEspecialTexture = new Texture(Gdx.files.internal("objeto_especial.png"));
+
+        // Cargar sonidos y música
+        dropSound = Gdx.audio.newSound(Gdx.files.internal("Nom.mp3"));
+        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("PouSong.mp3"));
+        loseSound = Gdx.audio.newSound(Gdx.files.internal("GameOver.mp3"));
+        comidaMalaSound = Gdx.audio.newSound(Gdx.files.internal("Mmm.ogg"));
+
+        // Configurar la música para que se repita en bucle
+        rainMusic.setLooping(true);
+    }
+
+    // Método para liberar todos los recursos
+    public static void liberar() {
+        // Liberar texturas de comida
+        hamburguesaTexture.dispose();
+        pizzaTexture.dispose();
+        donaTexture.dispose();
+        pouTexture.dispose();
+        
+        // Liberar textura de gota mala
+        gotaMalaTexture.dispose();
+        
+        // Liberar textura objeto especial
+        objetoEspecialTexture.dispose();
+
+        // Liberar sonidos y música
+        dropSound.dispose();
+        rainMusic.dispose();
+        loseSound.dispose();
+        comidaMalaSound.dispose();
+
+    }
+}
