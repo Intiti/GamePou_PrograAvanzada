@@ -1,0 +1,30 @@
+package puppy.code;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Rectangle;
+
+public abstract class Drop {
+    protected Texture textura;   
+    protected Rectangle area;    
+    protected int tipo;        
+
+    public Drop(Texture textura, float x, float y) {
+        this.textura = textura;
+        this.area = new Rectangle(x, y, 40, 50);  // Inicialización del área
+    }
+
+    public Texture getTextura() {
+        return textura;
+    }
+
+    // Método para acceder al área
+    public Rectangle getArea() {
+        return area;
+    }
+
+    public int getTipo() {
+        return tipo;
+    }
+
+    public abstract void actualizar(float delta);
+}
