@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 public class Lluvia {
     private Array<ElementoJuego> gotas;  // Cambiado a la interfaz ElementoJuego
     private long lastDropTime;
+    private long lastPowerUpTime;
     private Sound dropSound;
     private Music rainMusic;
 
@@ -21,23 +22,34 @@ public class Lluvia {
         this.rainMusic = Assets.rainMusic;
     }
 
-    public void crear() {
+    public void crear(Tarro tarro) {
         gotas = new Array<>();
-        crearGotaDeLluvia();
+        crearGotaDeLluvia(tarro);
         rainMusic.setLooping(true);
         rainMusic.play();
     }
 
-    private void crearGotaDeLluvia() {
-        float x = MathUtils.random(0, 800 - 64);
-        ElementoJuego nuevaGota;  // Usar la interfaz en lugar de la clase específica
 
-        int randomTipo = MathUtils.random(1, 50);
-        if (randomTipo == 1) {
-            nuevaGota = new ObjetoEspecial(x, 480);  // Objeto especial
-        } else if (randomTipo <= 5) {
+    public void crearPowerUp() {
+        float x = MathUtils.random(0, 800 - 64);
+        ElementoJuego powerUp = new ObjetoEspecial(x, 480);  // Crea un power-up específico
+        gotas.add(powerUp);
+        lastPowerUpTime = TimeUtils.nanoTime();
+    }
+    
+    private void crearGotaDeLluvia(Tarro tarro) {
+        float x = MathUtils.random(0, 800 - 64);
+        ElementoJuego nuevaGota;
+        
+        int puntos = tarro.getPuntos();
+        int probabilidadBomba = Math.min((int) (puntos * 0.025 + 5), 65); // Probabilidad máxima de 65%
+        int randomTipo = MathUtils.random(1, 101);
+
+
+        if (randomTipo <= probabilidadBomba) {
             nuevaGota = new Bomba(x, 480);  // Bomba
-        } else {
+        } 
+        else {
             Texture texturaAleatoria = Assets.comidasTexturas.random();
             nuevaGota = new Comida(texturaAleatoria, x, 480);  // Comida
         }
@@ -47,7 +59,15 @@ public class Lluvia {
     }
 
     public boolean actualizarMovimiento(Tarro tarro) {
-        if (TimeUtils.nanoTime() - lastDropTime > 100000000) crearGotaDeLluvia();
+        // Controlar generación de gotas regulares
+        if (TimeUtils.nanoTime() - lastDropTime > 130000000) {
+            crearGotaDeLluvia(tarro);
+        }
+        
+		// Controlar generación de power-ups cada cierto intervalo
+        if (TimeUtils.nanoTime() - lastPowerUpTime > 20000000000L) { // 20 segundos en nanosegundos
+            crearPowerUp();
+        }
 
         for (int i = 0; i < gotas.size; i++) {
             ElementoJuego gota = gotas.get(i);
