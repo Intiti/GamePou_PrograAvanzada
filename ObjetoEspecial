@@ -10,7 +10,7 @@ public class ObjetoEspecial extends Drop implements ElementoJuego {
 
     @Override
     public void actualizar(float delta) {
-        getArea().y -= 300 * delta;  // Movimiento hacia abajo
+        getArea().y -= 200 * delta;  // Movimiento hacia abajo más lento
     }
 
     @Override
